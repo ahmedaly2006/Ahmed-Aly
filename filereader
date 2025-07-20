@@ -1,0 +1,180 @@
+# filereader.py
+# Author: Ahmed Walid
+# Description: Custom file reader with OOP, decorators, and CLI menu
+
+import os
+from typing import Generator, List
+from functools import wraps
+
+# --------------------------
+# ANSI color codes
+# --------------------------
+ANSI_COLORS = {
+    "red": "\033[91m",
+    "green": "\033[92m",
+    "yellow": "\033[93m",
+    "blue": "\033[94m",
+    "reset": "\033[0m"
+}
+
+# --------------------------
+# Decorator for colored output
+# --------------------------
+def color_output(color: str):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            print(ANSI_COLORS.get(color, ""), end="")
+            result = func(*args, **kwargs)
+            print(ANSI_COLORS["reset"], end="")
+            return result
+        return wrapper
+    return decorator
+
+# --------------------------
+# FileReader base class
+# --------------------------
+class FileReader:
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+
+    def read_lines(self) -> Generator[str, None, None]:
+        if not os.path.exists(self.filepath):
+            print(f"File not found: {self.filepath}")
+            return iter([])
+        with open(self.filepath, 'r', encoding='utf-8') as f:
+            for line in f:
+                yield line.strip('\n')
+
+    @property
+    def lines(self) -> List[str]:
+        return list(self.read_lines())
+
+    @lines.setter
+    def lines(self, new_lines: List[str]):
+        with open(self.filepath, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(line.rstrip('\n') for line in new_lines) + '\n')
+
+    @staticmethod
+    def file_exists(path: str) -> bool:
+        return os.path.exists(path)
+
+    @classmethod
+    def from_text(cls, path: str, content: str):
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        return cls(path)
+
+    def __str__(self):
+        return f"FileReader(filepath='{self.filepath}')"
+
+    def __add__(self, other):
+        if not isinstance(other, FileReader):
+            raise ValueError("Can only add another FileReader")
+        new_path = "merged.txt"
+        with open(new_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(self.lines + other.lines))
+        return FileReader(new_path)
+
+    def concat_files(self, *others, output_name="concat_all.txt"):
+        all_lines = self.lines[:]
+        for other in others:
+            if not isinstance(other, FileReader):
+                raise TypeError("All arguments must be FileReader instances")
+            all_lines.extend(other.lines)
+        with open(output_name, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(all_lines))
+        return FileReader(output_name)
+
+    @color_output("blue")
+    def display(self):
+        for line in self.read_lines():
+            print(line)
+
+# --------------------------
+# LineStatsFileReader subclass
+# --------------------------
+class LineStatsFileReader(FileReader):
+    def line_count(self):
+        return len(self.lines)
+
+    def word_count(self):
+        return sum(len(line.split()) for line in self.lines)
+
+    def __str__(self):
+        return f"LineStatsFileReader(filepath='{self.filepath}', lines={self.line_count()}, words={self.word_count()})"
+
+    def __add__(self, other):
+        if not isinstance(other, FileReader):
+            raise ValueError("Can only add another FileReader")
+        new_path = "merged_with_stats.txt"
+        header = f"# Merged by LineStatsFileReader\n# Files: {self.filepath}, {other.filepath}\n"
+        with open(new_path, 'w', encoding='utf-8') as f:
+            f.write(header + '\n'.join(self.lines + other.lines))
+        return LineStatsFileReader(new_path)
+
+# --------------------------
+# Command-line menu
+# --------------------------
+def main_menu():
+    readers = {}
+
+    while True:
+        print("\n--- File Reader Menu ---")
+        print("1. Create new file")
+        print("2. Display file")
+        print("3. Show line and word count")
+        print("4. Merge two files")
+        print("5. Exit")
+        choice = input("Enter your choice (1-5): ")
+
+        if choice == '1':
+            name = input("Give a name to this file reader: ")
+            filename = input("Enter file name to create: ")
+            content = input("Enter file content (use \\n for new lines): ").replace("\\n", "\n")
+            reader = LineStatsFileReader.from_text(filename, content)
+            readers[name] = reader
+            print(f"File '{filename}' created and stored as '{name}'.")
+
+        elif choice == '2':
+            name = input("Enter file reader name to display: ")
+            reader = readers.get(name)
+            if reader:
+                reader.display()
+            else:
+                print("File not found in memory.")
+
+        elif choice == '3':
+            name = input("Enter file reader name for stats: ")
+            reader = readers.get(name)
+            if isinstance(reader, LineStatsFileReader):
+                print(f"Lines: {reader.line_count()} | Words: {reader.word_count()}")
+            else:
+                print("This file doesn't support statistics.")
+
+        elif choice == '4':
+            name1 = input("Enter first file reader name: ")
+            name2 = input("Enter second file reader name: ")
+            output_name = input("Name for merged result: ")
+            r1 = readers.get(name1)
+            r2 = readers.get(name2)
+            if r1 and r2:
+                merged = r1 + r2
+                readers[output_name] = merged
+                print(f"Files merged into '{merged.filepath}' and saved as '{output_name}'.")
+            else:
+                print("One or both file readers not found.")
+
+        elif choice == '5':
+            print("Goodbye!")
+            break
+
+        else:
+            print("Invalid input. Please choose 1-5.")
+
+# --------------------------
+# Only run the menu if the file is executed directly
+# --------------------------
+if __name__ == "__main__":
+    main_menu()
+
