@@ -1,0 +1,4 @@
+# Merged by LineStatsFileReader
+# Files: file.1, file.2
+this is my first file
+this is my 2nd file
