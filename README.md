@@ -1,4 +1,5 @@
-🧩 PART 1 – Imports, Constants, and Decorator
+
+PART 1 – Imports, Constants, and Decorator
 In Part 1, I set up the core utilities for the program.
 
 I import essential libraries: os for file operations, typing for type hints, wraps for decorators, and pyttsx3 for speech.
@@ -7,7 +8,7 @@ Then, I define ANSI color codes to allow colored terminal output.
 
 Lastly, I create a reusable decorator color_output that prints any function’s output in the specified color. This improves the CLI's visual experience.
 
-📄 PART 2 – Base File Reader Class
+PART 2 – Base File Reader Class
 This is the foundational class: FileReader.
 
 It allows reading and writing of text files.
@@ -19,7 +20,7 @@ It supports file merging using + and multiple file concatenation.
 Lastly, the display() method uses the blue-colored decorator for printing file content in the terminal.
 thats why when I display the content is displayed in blue
 
-📊 PART 3 – LineStatsFileReader (Subclass)
+PART 3 – LineStatsFileReader (Subclass)
 This class extends FileReader with analysis features.
 
 It adds line_count() and word_count() methods to calculate basic statistics.
@@ -28,7 +29,7 @@ When merging files, it includes a header that notes which files were combined.
 
 It overrides __str__() to return a summary including filepath, number of lines, and words.
 
-🔊 PART 4 – SpeakingFileReader (Subclass)
+PART 4 – SpeakingFileReader (Subclass)
 This subclass adds text-to-speech.
 
 It initializes a pyttsx3 engine in the constructor.
@@ -39,7 +40,8 @@ The display_and_speak() method prints each line and speaks it, combining both vi
 
 It’s especially useful for accessibility or audio-based reading of files.
 
-🖥️ PART 5 – Command-Line Interface (CLI)
+
+ PART 5 – Command-Line Interface (CLI)
 This is the user-facing part of the program.
 
 A menu is presented with options to create, read, merge, analyze, and speak files.
