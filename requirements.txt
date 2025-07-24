@@ -38,7 +38,10 @@ pyparsing==3.2.3
 pytest==8.4.1
 python-dateutil==2.9.0.post0
 pyttsx3==2.99
-pywin32==305; sys_platform == 'win32'
+
+# Fix for pywin32 platform-specific install
+pywin32==305; sys_platform == "win32"
+
 requests==2.32.4
 six==1.17.0
 tomlkit==0.13.3
